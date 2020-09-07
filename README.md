@@ -88,7 +88,7 @@ auto obj = dep->add<MyClass>();
 ```
 
 And the macro di_new is equal to _DependencyInjection::instance()->create_, so this two lines are equal:
-...
+```
 auto pp = DependencyInjection::instance()->create<P, C1, C2>();
 auto pp = di_new(P, C1, C2);
 ```
