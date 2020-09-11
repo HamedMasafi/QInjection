@@ -12,11 +12,13 @@
 
 namespace Dependency {
 
+class PoolPrivate;
 class Pool : public QObject
 {
     Q_OBJECT
 
-    QMap<QString, QObject *> _data;
+    PoolPrivate *p_ptr;
+    Q_DECLARE_PRIVATE(Pool)
 
     struct SignalBase
     {
@@ -79,6 +81,7 @@ public:
     void add(QObject *object, const QString &key);
     QObject *get(const QString &name) const;
     bool remove(const QString &name, const bool &deleteLater = true);
+    bool contains(const QString &key) const;
 
     template<class T>
     T *add() {
@@ -104,7 +107,7 @@ public:
 
     template<class T>
     bool contains() {
-        return _data.contains(T::staticMetaObject.className());
+        return contains(T::staticMetaObject.className());
     }
 
     template<typename T, class R>

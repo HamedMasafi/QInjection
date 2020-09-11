@@ -1,5 +1,7 @@
 #include "dependencyinjection.h"
 
+#include "poolprivate.h"
+
 #include <QThread>
 #include <QDebug>
 
@@ -53,7 +55,9 @@ void Pool::add(QObject *object)
 
 void Pool::add(QObject *object, const QString &key)
 {
-    if (_data.contains(key))
+    Q_D(Pool);
+
+    if (d->data.contains(key))
         return;
 
     QThread *t = qobject_cast<QThread*>(object);
@@ -66,27 +70,37 @@ void Pool::add(QObject *object, const QString &key)
         remove(key);
     });
 
-    _data.insert(key, object);
+    d->data.insert(key, object);
 
     callSlots(object);
 }
 
 QObject *Pool::get(const QString &name) const
 {
-    if (_data.contains(name))
-        return _data.value(name);
+    Q_D(const Pool);
+
+    if (d->data.contains(name))
+        return d->data.value(name);
     else
         return nullptr;
 }
 
 bool Pool::remove(const QString &name, const bool &deleteLater)
 {
-    if (!_data.contains(name))
+    Q_D(Pool);
+
+    if (!d->data.contains(name))
         return false;
 
     if (deleteLater)
-        _data.value(name)->deleteLater();
-    return _data.remove(name) > 0;
+        d->data.value(name)->deleteLater();
+    return d->data.remove(name) > 0;
+}
+
+bool Pool::contains(const QString &key) const
+{
+    Q_D(const Pool);
+    return d->data.contains(key);
 }
 
 }
