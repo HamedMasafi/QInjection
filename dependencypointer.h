@@ -6,18 +6,18 @@
 #include <QVariant>
 #include <QObject>
 
+namespace Dependency {
+
 template<class T>
-class DependencyPointer : public QObject{
-    Q_STATIC_ASSERT_X(
-        __is_base_of(QObject, T),
-        "DependencyPointer's template type must not be derived from QObject");
+class Pointer : public QObject{
+    Q_STATIC_ASSERT_X(!std::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
 
     T *_data;
 
 public:
-    DependencyPointer() : _data(DependencyInjection::instance()->get<T>())
+    Pointer() : _data(Pool::instance()->get<T>())
     {
-        DependencyInjection::instance()->registerObjectNotify<T>(this, [this](T *t) {
+        Dependency::Pool::instance()->registerObjectNotify<T>(this, [this](T *t) {
             _data = t;
         });
     }
@@ -50,77 +50,71 @@ public:
     }
 };
 
-
-
-template<class T>
-Q_DECLARE_TYPEINFO_BODY(DependencyPointer<T>, Q_MOVABLE_TYPE);
+}
 
 template<class T>
-inline bool operator==(const T *o, const DependencyPointer<T> &p)
+Q_DECLARE_TYPEINFO_BODY(Dependency::Pointer<T>, Q_MOVABLE_TYPE);
+
+template<class T>
+inline bool operator==(const T *o, const Dependency::Pointer<T> &p)
 {
     return o == p.operator->();
 }
 
 template<class T>
-inline bool operator==(const DependencyPointer<T> &p, const T *o)
+inline bool operator==(const Dependency::Pointer<T> &p, const T *o)
 {
     return p.operator->() == o;
 }
 
 template<class T>
-inline bool operator==(T *o, const DependencyPointer<T> &p)
+inline bool operator==(T *o, const Dependency::Pointer<T> &p)
 {
     return o == p.operator->();
 }
 
 template<class T>
-inline bool operator==(const DependencyPointer<T> &p, T *o)
+inline bool operator==(const Dependency::Pointer<T> &p, T *o)
 {
     return p.operator->() == o;
 }
 
 template<class T>
-inline bool operator==(const DependencyPointer<T> &p1,
-                       const DependencyPointer<T> &p2)
+inline bool operator==(const Dependency::Pointer<T> &p1,
+                       const Dependency::Pointer<T> &p2)
 {
     return p1.operator->() == p2.operator->();
 }
 
 template<class T>
-inline bool operator!=(const T *o, const DependencyPointer<T> &p)
+inline bool operator!=(const T *o, const Dependency::Pointer<T> &p)
 {
     return o != p.operator->();
 }
 
 template<class T>
-inline bool operator!=(const DependencyPointer<T> &p, const T *o)
+inline bool operator!=(const Dependency::Pointer<T> &p, const T *o)
 {
     return p.operator->() != o;
 }
 
 template<class T>
-inline bool operator!=(T *o, const DependencyPointer<T> &p)
+inline bool operator!=(T *o, const Dependency::Pointer<T> &p)
 {
     return o != p.operator->();
 }
 
 template<class T>
-inline bool operator!=(const DependencyPointer<T> &p, T *o)
+inline bool operator!=(const Dependency::Pointer<T> &p, T *o)
 {
     return p.operator->() != o;
 }
 
 template<class T>
-inline bool operator!=(const DependencyPointer<T> &p1,
-                       const DependencyPointer<T> &p2)
+inline bool operator!=(const Dependency::Pointer<T> &p1,
+                       const Dependency::Pointer<T> &p2)
 {
     return p1.operator->() != p2.operator->();
-}
-
-template<class T>
-inline void swap(DependencyPointer<T> &p1, DependencyPointer<T> &p2) noexcept
-{
-    p1.swap(p2);
 }
 
 #endif // DEPENDENCYPOINTER_H

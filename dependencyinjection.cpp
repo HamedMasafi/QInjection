@@ -3,20 +3,37 @@
 #include <QThread>
 #include <QDebug>
 
-DependencyInjection::DependencyInjection(QObject *parent) : QObject(parent)
+namespace Dependency {
+
+Pool *Pool::_instance = nullptr;
+
+Pool::Pool(QObject *parent) : QObject(parent)
 {
 
 }
 
-DependencyInjection *DependencyInjection::instance()
+Pool *Pool::instance()
 {
-    static DependencyInjection *instance = nullptr;
-    if (!instance)
-        instance = new DependencyInjection;
-    return instance;
+    if (!_instance)
+        _instance = new Pool;
+    return _instance;
 }
 
-int DependencyInjection::callSlots(QObject *o, bool sendNull)
+void Pool::setInctance(Pool *newInstance, bool removeOld)
+{
+    if (!newInstance)
+        return;
+
+    if (_instance == newInstance)
+        return;
+
+    if (removeOld)
+        _instance->deleteLater();
+
+    _instance = newInstance;
+}
+
+int Pool::callSlots(QObject *o, bool sendNull)
 {
     QString key{o->metaObject()->className()};
     int ret{0};
@@ -29,12 +46,12 @@ int DependencyInjection::callSlots(QObject *o, bool sendNull)
     return ret;
 }
 
-void DependencyInjection::add(QObject *object)
+void Pool::add(QObject *object)
 {
     add(object, object->metaObject()->className());
 }
 
-void DependencyInjection::add(QObject *object, const QString &key)
+void Pool::add(QObject *object, const QString &key)
 {
     if (_data.contains(key))
         return;
@@ -54,7 +71,7 @@ void DependencyInjection::add(QObject *object, const QString &key)
     callSlots(object);
 }
 
-QObject *DependencyInjection::get(const QString &name) const
+QObject *Pool::get(const QString &name) const
 {
     if (_data.contains(name))
         return _data.value(name);
@@ -62,7 +79,7 @@ QObject *DependencyInjection::get(const QString &name) const
         return nullptr;
 }
 
-bool DependencyInjection::remove(const QString &name, const bool &deleteLater)
+bool Pool::remove(const QString &name, const bool &deleteLater)
 {
     if (!_data.contains(name))
         return false;
@@ -70,4 +87,6 @@ bool DependencyInjection::remove(const QString &name, const bool &deleteLater)
     if (deleteLater)
         _data.value(name)->deleteLater();
     return _data.remove(name) > 0;
+}
+
 }

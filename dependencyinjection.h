@@ -1,15 +1,18 @@
-#ifndef DEPENDENCYINJECTION_H
-#define DEPENDENCYINJECTION_H
+#ifndef Pool_H
+#define Pool_H
 
 #include <QMap>
 #include <QObject>
-//#include <qobjectdefs_impl.h>
 
-#define dep DependencyInjection::instance()
-#define di_new(Type, ...) DependencyInjection::instance()->create<Type, __VA_ARGS__>()
+#define dep ::Dependency::Pool::instance()
+#define di_new(Type, ...) ::Dependency::Pool::instance()->create<Type, __VA_ARGS__>()
+#define di_get(type) ::Dependency::Pool::instance()->get<type>()
+#define di_add(type) ::Dependency::Pool::instance()->add<type>()
 #define CLASS_NAME(T) T::staticMetaObject.className()
 
-class DependencyInjection : public QObject
+namespace Dependency {
+
+class Pool : public QObject
 {
     Q_OBJECT
 
@@ -70,7 +73,7 @@ class DependencyInjection : public QObject
     QList<SignalBase *> _signals;
 
 public:
-    explicit DependencyInjection(QObject *parent = nullptr);
+    explicit Pool(QObject *parent = nullptr);
 
     void add(QObject *object);
     void add(QObject *object, const QString &key);
@@ -159,12 +162,27 @@ public:
     {
         return new _Type(get<_Args>()...);
     }
-    static DependencyInjection *instance();
+    static Pool *_instance;
+    static Pool *instance();
+    static void setInctance(Pool *newInstance, bool removeOld = true);
 
 private:
     int callSlots(QObject *o, bool sendNull = false);
 signals:
 
 };
+class Inject {
+public:
+    Inject();
+    Inject(const Inject &) = delete;
+    Inject(Inject &&) = delete;
+    template<class T>
+    operator T *()
+    {
+        return Pool::instance()->get<T>();
+    }
+};
 
-#endif // DEPENDENCYINJECTION_H
+}
+
+#endif // Pool_H
