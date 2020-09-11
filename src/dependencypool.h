@@ -17,7 +17,7 @@ class Pool : public QObject
 {
     Q_OBJECT
 
-    PoolPrivate *p_ptr;
+    PoolPrivate *d_ptr;
     Q_DECLARE_PRIVATE(Pool)
 
     struct SignalBase
@@ -175,14 +175,21 @@ signals:
 
 };
 class Inject {
+    QString _key;
 public:
-    Inject();
+    Inject()
+    {}
+    Inject(const QString &key) : _key(key)
+    {}
     Inject(const Inject &) = delete;
     Inject(Inject &&) = delete;
     template<class T>
     operator T *()
     {
-        return Pool::instance()->get<T>();
+        if (_key.isEmpty())
+            return Pool::instance()->get<T>();
+        else
+            return Pool::instance()->get<T>(_key);
     }
 };
 

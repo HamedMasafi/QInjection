@@ -1,7 +1,7 @@
 #ifndef DEPENDENCYPOINTER_H
 #define DEPENDENCYPOINTER_H
 
-#include "dependencyinjection.h"
+#include "dependencypool.h"
 
 #include <QVariant>
 #include <QObject>

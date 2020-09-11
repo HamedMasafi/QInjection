@@ -1,6 +1,5 @@
-#include "dependencyinjection.h"
-
-#include "poolprivate.h"
+#include "dependencypool.h"
+#include "dependencypool_p.h"
 
 #include <QThread>
 #include <QDebug>
@@ -8,8 +7,13 @@
 namespace Dependency {
 
 Pool *Pool::_instance = nullptr;
+Pool *PoolPrivate::instance = nullptr;
 
-Pool::Pool(QObject *parent) : QObject(parent)
+PoolPrivate::PoolPrivate(Dependency::Pool *parent) : q_ptr(parent)
+{}
+
+
+Pool::Pool(QObject *parent) : QObject(parent), d_ptr(new PoolPrivate(this))
 {
 
 }
