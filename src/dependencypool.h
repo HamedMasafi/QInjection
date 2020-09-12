@@ -92,7 +92,7 @@ public:
 
     template<class T>
     T *get() const{
-        return qobject_cast<T*>(get(T::staticMetaObject.className()));
+        return qobject_cast<T*>(get(CLASS_NAME(T)));
     }
 
     template<class T>
@@ -102,12 +102,12 @@ public:
 
     template<class T>
     bool remove(const bool &deleteLater = true){
-        return remove(T::staticMetaObject.className(), deleteLater);
+        return remove(CLASS_NAME(T), deleteLater);
     }
 
     template<class T>
     bool contains() {
-        return contains(T::staticMetaObject.className());
+        return contains(CLASS_NAME(T));
     }
 
     template<typename T, class R>
