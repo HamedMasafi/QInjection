@@ -174,15 +174,15 @@ private:
 signals:
 
 };
-class Inject {
+class Injecter {
     QString _key;
 public:
-    Inject()
+    Injecter()
     {}
-    Inject(const QString &key) : _key(key)
+    Injecter(const QString &key) : _key(key)
     {}
-    Inject(const Inject &) = delete;
-    Inject(Inject &&) = delete;
+    Injecter(const Injecter &) = delete;
+    Injecter(Injecter &&) = delete;
     template<class T>
     operator T *()
     {
@@ -192,6 +192,7 @@ public:
             return Pool::instance()->get<T>(_key);
     }
 };
+extern Injecter Inject;
 
 }
 

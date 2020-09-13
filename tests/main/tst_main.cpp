@@ -21,7 +21,7 @@ void MainTest::pointer()
     QCOMPARE(a->add(2, 3), 5);
 }
 
-int run_inject(int n1, int n2, Adder *a = Dependency::Inject())
+int run_inject(int n1, int n2, Adder *a = Dependency::Inject)
 {
     return a->add(n1, n2);
 }
