@@ -20,6 +20,8 @@ class Pool : public QObject
     PoolPrivate *d_ptr;
     Q_DECLARE_PRIVATE(Pool)
 
+    typedef std::function<QObject *()> CreatorFunc;
+
     struct SignalBase
     {
         QString _key;
@@ -72,6 +74,7 @@ class Pool : public QObject
         }
     };
 
+    QMap<QString, CreatorFunc> _creators;
     QList<SignalBase *> _signals;
 
 public:
@@ -158,6 +161,22 @@ public:
         connect(reciver, &QObject::destroyed, [this, s](QObject * = nullptr) {
             _signals.removeOne(s);
         });
+    }
+
+    template<class T>
+    void registerCreator(CreatorFunc cb)
+    {
+        _creators.insert(CLASS_NAME(T), cb);
+    }
+    template<class T>
+    void registerCreator(T *(*cb)())
+    {
+        _creators.insert(CLASS_NAME(T), cb);
+    }
+    template<class T>
+    void registerCreator()
+    {
+        _creators.insert(CLASS_NAME(T), []() { return new T; });
     }
 
     template<class _Type, class... _Args>

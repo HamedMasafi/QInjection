@@ -87,6 +87,8 @@ QObject *Pool::get(const QString &name) const
 
     if (d->data.contains(name))
         return d->data.value(name);
+    else if (_creators.contains(name))
+        return _creators.value(name)();
     else
         return nullptr;
 }
