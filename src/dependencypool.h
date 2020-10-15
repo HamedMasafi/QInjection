@@ -82,7 +82,7 @@ public:
 
     void add(QObject *object);
     void add(QObject *object, const QString &key);
-    QObject *get(const QString &name) const;
+    QObject *get(const QString &name);
     bool remove(const QString &name, const bool &deleteLater = true);
     bool contains(const QString &key) const;
 
@@ -94,12 +94,12 @@ public:
     }
 
     template<class T>
-    T *get() const{
+    T *get() {
         return qobject_cast<T*>(get(CLASS_NAME(T)));
     }
 
     template<class T>
-    T *get(const QString &key) const{
+    T *get(const QString &key) {
         return qobject_cast<T*>(get(key));
     }
 

@@ -81,16 +81,19 @@ void Pool::add(QObject *object, const QString &key)
     callSlots(object);
 }
 
-QObject *Pool::get(const QString &name) const
+QObject *Pool::get(const QString &name)
 {
     Q_D(const Pool);
 
-    if (d->data.contains(name))
+    if (d->data.contains(name)) {
         return d->data.value(name);
-    else if (_creators.contains(name))
-        return _creators.value(name)();
-    else
+    } else if (_creators.contains(name)) {
+        auto tmp = _creators.value(name)();
+        add(tmp);
+        return tmp;
+    }  else {
         return nullptr;
+    }
 }
 
 bool Pool::remove(const QString &name, const bool &deleteLater)
