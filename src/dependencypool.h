@@ -179,6 +179,12 @@ public:
         _creators.insert(CLASS_NAME(T), []() { return new T; });
     }
 
+    template<class T, typename... _Args>
+    void registerCreator(_Args... args)
+    {
+        _creators.insert(CLASS_NAME(T), [&args...]() { return new T(args); });
+    }
+
     template<class _Type, class... _Args>
     _Type *create()
     {
