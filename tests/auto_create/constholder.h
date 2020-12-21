@@ -10,6 +10,7 @@ class ConstHolder : public QObject
 
 public:
     explicit ConstHolder(QObject *parent = nullptr);
+    explicit ConstHolder(int n, QObject *parent = nullptr);
 
     int value() const;
     void setValue(int value);

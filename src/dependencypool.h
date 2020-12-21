@@ -179,11 +179,15 @@ public:
         _creators.insert(CLASS_NAME(T), []() { return new T; });
     }
 
+#if __cplusplus >= 201402L
     template<class T, typename... _Args>
     void registerCreator(_Args... args)
     {
-        _creators.insert(CLASS_NAME(T), [&args...]() { return new T(args); });
+        _creators.insert(CLASS_NAME(T), [&args...]() {
+            return new T(args...);
+        });
     }
+#endif
 
     template<class _Type, class... _Args>
     _Type *create()

@@ -14,3 +14,8 @@ ConstHolder::ConstHolder(QObject *parent) : QObject(parent)
 {
 
 }
+
+ConstHolder::ConstHolder(int n, QObject *parent) : QObject(parent), _value{n}
+{
+
+}
