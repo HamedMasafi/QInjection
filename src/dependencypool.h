@@ -190,7 +190,7 @@ public:
 
 private:
     int callSlots(QObject *o, bool sendNull = false);
-signals:
+Q_SIGNALS:
 
 };
 class Injecter {
