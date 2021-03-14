@@ -1,5 +1,7 @@
 INCLUDEPATH += $$PWD
 
+DEFINES += QINJECTION_LIB
+
 SOURCES += \
     $$PWD/dependencypointer.cpp \
     $$PWD/dependencypool.cpp
