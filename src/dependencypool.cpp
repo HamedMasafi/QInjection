@@ -46,7 +46,7 @@ int Pool::callSlots(QObject *o, bool sendNull)
     QString key{o->metaObject()->className()};
     int ret{0};
 
-    for (auto s : _signals)
+    for (auto &s : _signals)
         if (s->_key == key) {
             s->call(sendNull ? nullptr : o);
             ret++;
@@ -86,6 +86,10 @@ QObject *Pool::get(const QString &name)
     Q_D(const Pool);
 
     if (d->data.contains(name)) {
+#ifdef QT_DEBUG
+        if (!d->data.contains(name))
+            qDebug() << "Object for key" << name << "storred as nullptr";
+#endif
         return d->data.value(name);
     } else if (_creators.contains(name)) {
         auto tmp = _creators.value(name)();
