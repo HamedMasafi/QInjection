@@ -7,7 +7,6 @@
 namespace Dependency {
 
 Injecter Inject;
-
 Pool *Pool::_instance = nullptr;
 Pool *PoolPrivate::instance = nullptr;
 

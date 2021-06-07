@@ -203,24 +203,29 @@ private:
 Q_SIGNALS:
 
 };
+
 class Injecter {
-    QString _key;
+    const char* _key;
+
 public:
-    Injecter()
+    Injecter() : _key{nullptr}
     {}
-    Injecter(const QString &key) : _key(key)
+    Injecter(const char *key) : _key(key)
     {}
+
     Injecter(const Injecter &) = delete;
     Injecter(Injecter &&) = delete;
+
     template<class T>
     operator T *()
     {
-        if (_key.isEmpty())
+        if (_key)
             return Pool::instance()->get<T>();
         else
             return Pool::instance()->get<T>(_key);
     }
 };
+
 extern Injecter Inject;
 
 }
