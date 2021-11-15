@@ -192,8 +192,10 @@ public:
     template<class _Type, class... _Args>
     _Type *create()
     {
+        auto tmp = _creators.value(CLASS_NAME(_Type))();
         return new _Type(get<_Args>()...);
     }
+
     static Pool *_instance;
     static Pool *instance();
     static void setInctance(Pool *newInstance, bool removeOld = true);
