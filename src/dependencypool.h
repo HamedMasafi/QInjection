@@ -3,6 +3,7 @@
 
 #include <QMap>
 #include <QObject>
+#include "dependencycreator.h"
 
 #define dep ::Dependency::Pool::instance()
 #define di_new(Type, ...) ::Dependency::Pool::instance()->create<Type, __VA_ARGS__>()
@@ -22,58 +23,6 @@ class Pool : public QObject
 
     typedef std::function<QObject *()> CreatorFunc;
 
-    struct SignalBase
-    {
-        QString _key;
-        void check(const QString &key, QObject *obj)
-        {
-            if (key == _key)
-                call(obj);
-        }
-        virtual void call(QObject *obj) {
-            Q_UNUSED(obj)
-        }
-    };
-
-    template<typename T, class R>
-    struct SignalPointer : SignalBase
-    {
-        R *reciver;
-        void (R::*slot)(T *);
-
-        void call(QObject *obj) override {
-            if (obj)
-                (reciver->*slot)(qobject_cast<T*>(obj));
-            else
-                (reciver->*slot)(nullptr);
-        }
-    };
-
-    template<typename T, class R>
-    struct SignalPointerWithoutParam : SignalBase {
-        R *reciver;
-        void (R::*slot)();
-
-        void call(QObject *obj) override
-        {
-            Q_UNUSED(obj)
-            (reciver->*slot)();
-        }
-    };
-
-    template<typename T, class R>
-    struct SignalPointerFunc : SignalBase {
-        std::function<void(T *)> _cb;
-
-        void call(QObject *obj) override
-        {
-            if (obj)
-                _cb(qobject_cast<T *>(obj));
-            else
-                _cb(nullptr);
-        }
-    };
-
     QMap<QString, CreatorFunc> _creators;
     QList<SignalBase *> _signals;
 
@@ -87,21 +36,13 @@ public:
     bool contains(const QString &key) const;
 
     template<class T>
-    T *add() {
-        auto o = new T;
-        add(o);
-        return o;
-    }
+    T *add();
 
     template<class T>
-    T *get() {
-        return qobject_cast<T*>(get(CLASS_NAME(T)));
-    }
+    T *get();
 
     template<class T>
-    T *get(const QString &key) {
-        return qobject_cast<T*>(get(key));
-    }
+    T *get(const QString &key);
 
     template<class T>
     bool remove(const bool &deleteLater = true){
@@ -206,30 +147,25 @@ Q_SIGNALS:
 
 };
 
-class Injecter {
-    const char* _key;
 
-public:
-    Injecter() : _key{nullptr}
-    {}
-    Injecter(const char *key) : _key(key)
-    {}
+template <class T>
+Q_OUTOFLINE_TEMPLATE T *Pool::add()
+{
+    auto o = new T;
+    add(o);
+    return o;
+}
+template<class T>
+Q_OUTOFLINE_TEMPLATE T *Pool::get()
+{
+    return qobject_cast<T*>(get(CLASS_NAME(T)));
+}
 
-    Injecter(const Injecter &) = delete;
-    Injecter(Injecter &&) = delete;
-
-    template<class T>
-    operator T *()
-    {
-        if (_key)
-            return Pool::instance()->get<T>();
-        else
-            return Pool::instance()->get<T>(_key);
-    }
-};
-
-extern Injecter Inject;
-
+template<class T>
+Q_OUTOFLINE_TEMPLATE T *Pool::get(const QString &key)
+{
+    return qobject_cast<T*>(get(key));
+}
 }
 
 #endif // Pool_H
