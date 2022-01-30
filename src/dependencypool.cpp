@@ -18,12 +18,40 @@ void Pool::addCreator(const QString &key, CreatorBase *creator)
     Q_D(Pool);
     if (d->creators.contains(key)) {
         qWarning("Dependency pool already has a %s key", key.toLatin1().data());
+        return;
     }
+    d->creators.insert(key, creator);
 }
 
 Pool::Pool(QObject *parent) : QObject(parent), d_ptr(new PoolPrivate(this))
 {
 
+}
+
+QObject *Pool::create(const QString &key)
+{
+    Q_D(Pool);
+    if (!d->creators.contains(key))
+        return nullptr;
+
+    auto creator = d->creators.value(key);
+
+    switch (creator->_type){
+    case CreatorType::Singelton:
+        return creator->create();
+
+    case CreatorType::Scopped: {
+        if (creator->_object)
+            return creator->_object;
+
+        creator->_object = creator->create();
+        return creator->_object;
+    }
+    }
+
+    Q_UNREACHABLE();
+
+    return nullptr;
 }
 
 Pool *Pool::instance()
