@@ -13,6 +13,14 @@ PoolPrivate::PoolPrivate(Dependency::Pool *parent) : q_ptr(parent)
 {}
 
 
+void Pool::addCreator(const QString &key, CreatorBase *creator)
+{
+    Q_D(Pool);
+    if (d->creators.contains(key)) {
+        qWarning("Dependency pool already has a %s key", key.toLatin1().data());
+    }
+}
+
 Pool::Pool(QObject *parent) : QObject(parent), d_ptr(new PoolPrivate(this))
 {
 

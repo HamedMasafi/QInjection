@@ -7,6 +7,7 @@ class QObject;
 
 namespace Dependency {
 
+class CreatorBase;
 class Pool;
 class PoolPrivate
 {
@@ -15,7 +16,11 @@ class PoolPrivate
 
 public:
     PoolPrivate(Pool *parent);
+
+    QList<CreatorBase*> _creators;
     QMap<QString, QObject *> data;
+    QMap<QString, CreatorBase *> creators;
+
     static Pool *instance;
 };
 

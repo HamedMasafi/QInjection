@@ -26,8 +26,25 @@ class Pool : public QObject
     QMap<QString, CreatorFunc> _creators;
     QList<SignalBase *> _signals;
 
+
 public:
     explicit Pool(QObject *parent = nullptr);
+
+    template<class T>
+    void addSingleton(T *object);
+    template<class T>
+    void addSingleton(T *(*slot)());
+    template<class _Owner, class T>
+    void addSingleton(_Owner *owner, void (_Owner::*slot)(T *));
+
+    template<class T>
+    void addScopped(T *object);
+    template<class T>
+    void addScopped(T *(*slot)());
+    template<class _Owner, class T>
+    void addScopped(_Owner *owner, void (_Owner::*slot)(T *));
+
+    QObject *create(const QString &key);
 
     void add(QObject *object);
     void add(QObject *object, const QString &key);
@@ -36,21 +53,21 @@ public:
     bool contains(const QString &key) const;
 
     template<class T>
-    T *add();
+    Q_DECL_DEPRECATED T *add();
 
     template<class T>
-    T *get();
+    Q_DECL_DEPRECATED T *get();
 
     template<class T>
-    T *get(const QString &key);
+    Q_DECL_DEPRECATED T *get(const QString &key);
 
     template<class T>
-    bool remove(const bool &deleteLater = true){
+    Q_DECL_DEPRECATED bool remove(const bool &deleteLater = true){
         return remove(CLASS_NAME(T), deleteLater);
     }
 
     template<class T>
-    bool contains() {
+    Q_DECL_DEPRECATED bool contains() {
         return contains(CLASS_NAME(T));
     }
 
@@ -142,10 +159,50 @@ public:
     static void setInctance(Pool *newInstance, bool removeOld = true);
 
 private:
+    void addCreator(const QString &key, CreatorBase *creator);
     int callSlots(QObject *o, bool sendNull = false);
 Q_SIGNALS:
 
 };
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE void Pool::addSingleton(T *object) {
+    auto creator = new SimpleCreator<T>(CreatorType::Singelton, object);
+    addCreator(CLASS_NAME(T), creator);
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE void Pool::addSingleton(T*(*slot)() ) {
+    auto creator = new FunctionCreator<T>(CreatorType::Singelton, slot);
+    addCreator(CLASS_NAME(T), creator);
+}
+
+template<class _Owner, class T>
+Q_OUTOFLINE_TEMPLATE void Pool::addSingleton(_Owner *owner, void (_Owner::*slot)(T *))
+{
+    auto creator = new ClassFunctionCreator<_Owner, T>(CreatorType::Singelton, owner, slot);
+    addCreator(CLASS_NAME(T), creator);
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE void Pool::addScopped(T *object) {
+    auto creator = new SimpleCreator<T>(CreatorType::Scopped, object);
+    addCreator(CLASS_NAME(T), creator);
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE void Pool::addScopped(T*(*slot)() ) {
+    auto creator = new FunctionCreator<T>(CreatorType::Scopped, slot);
+    addCreator(CLASS_NAME(T), creator);
+}
+
+template<class _Owner, class T>
+Q_OUTOFLINE_TEMPLATE void Pool::addScopped(_Owner *owner, void (_Owner::*slot)(T *))
+{
+    auto creator = new ClassFunctionCreator<_Owner, T>(CreatorType::Scopped, owner, slot);
+    addCreator(CLASS_NAME(T), creator);
+}
+
 
 
 template <class T>
