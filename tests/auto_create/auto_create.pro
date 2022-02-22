@@ -7,10 +7,11 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 SOURCES +=  tst_create.cpp \
-    constholder.cpp
+    ../common/constholder.cpp
 
 HEADERS += \
-    constholder.h
+    ../common/constholder.h
 
+INCLUDEPATH += ../common/
 
 include(../../src/src.pri)

@@ -3,10 +3,11 @@
 
 #include "dependencypool.h"
 
-namespace Dependency {
+namespace QInjection {
 
-class Injecter {
-    const char* _key;
+class Injecter
+{
+    const char *_key;
 
 public:
     Injecter();
@@ -19,13 +20,13 @@ public:
     operator T *()
     {
         if (_key)
-            return Pool::instance()->get<T>();
+            return create<T>();
         else
-            return Pool::instance()->get<T>(_key);
+            return qobject_cast<T *>(create(_key));
     }
 };
 
 extern Injecter Inject;
-}
+} // namespace QInjection
 
 #endif // DEPENDENCYINJECTOR_H

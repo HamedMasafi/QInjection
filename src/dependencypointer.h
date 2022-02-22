@@ -6,34 +6,22 @@
 #include <QVariant>
 #include <QObject>
 
-namespace Dependency {
+namespace QInjection {
 
 template<class T>
 class Pointer : public QObject{
     Q_STATIC_ASSERT_X(!std::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
 
     T *_data;
+    bool _deleteOnExit{false};
 
 public:
-    Pointer() : _data(Pool::instance()->get<T>())
-    {
-        Dependency::Pool::instance()->registerObjectNotify<T>(this, [this](T *t) {
-            _data = t;
-        });
-    }
+    Pointer();
+    ~Pointer();
 
-    inline T *data() const
-    {
-        return _data;
-    }
-    inline T *operator->() const
-    {
-        return data();
-    }
-    inline T &operator*() const
-    {
-        return *data();
-    }
+    T *data() const;
+    T *operator->() const;
+    T &operator*() const;
     inline operator T *() const
     {
         return data();
@@ -50,69 +38,104 @@ public:
     }
 };
 
+template<class T>
+Q_OUTOFLINE_TEMPLATE Pointer<T>::Pointer() : _data(create<T>())
+{
+    auto t = Impl::typeForKey(CLASS_NAME(T));
+    _deleteOnExit = t == CreatorType::Scopped;
+    registerObjectNotify<T>(this, [this](T *t) {
+        _data = t;
+    });
 }
 
 template<class T>
-Q_DECLARE_TYPEINFO_BODY(Dependency::Pointer<T>, Q_MOVABLE_TYPE);
+Q_OUTOFLINE_TEMPLATE Pointer<T>::~Pointer()
+{
+    if (_deleteOnExit)
+        _data->deleteLater();
+}
 
 template<class T>
-inline bool operator==(const T *o, const Dependency::Pointer<T> &p)
+Q_OUTOFLINE_TEMPLATE T *Pointer<T>::data() const
+{
+    return _data;
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE T *Pointer<T>::operator->() const
+{
+    return data();
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE T &Pointer<T>::operator*() const
+{
+    return *data();
+}
+
+}
+
+template<class T>
+Q_DECLARE_TYPEINFO_BODY(QInjection::Pointer<T>, Q_MOVABLE_TYPE);
+
+template<class T>
+inline bool operator==(const T *o, const QInjection::Pointer<T> &p)
 {
     return o == p.operator->();
 }
 
 template<class T>
-inline bool operator==(const Dependency::Pointer<T> &p, const T *o)
+inline bool operator==(const QInjection::Pointer<T> &p, const T *o)
 {
     return p.operator->() == o;
 }
 
 template<class T>
-inline bool operator==(T *o, const Dependency::Pointer<T> &p)
+inline bool operator==(T *o, const QInjection::Pointer<T> &p)
 {
     return o == p.operator->();
 }
 
 template<class T>
-inline bool operator==(const Dependency::Pointer<T> &p, T *o)
+inline bool operator==(const QInjection::Pointer<T> &p, T *o)
 {
     return p.operator->() == o;
 }
 
 template<class T>
-inline bool operator==(const Dependency::Pointer<T> &p1,
-                       const Dependency::Pointer<T> &p2)
+inline bool operator==(const QInjection::Pointer<T> &p1,
+                       const QInjection::Pointer<T> &p2)
 {
     return p1.operator->() == p2.operator->();
 }
 
 template<class T>
-inline bool operator!=(const T *o, const Dependency::Pointer<T> &p)
+inline bool operator!=(const T *o, const QInjection::Pointer<T> &p)
 {
     return o != p.operator->();
 }
 
 template<class T>
-inline bool operator!=(const Dependency::Pointer<T> &p, const T *o)
+inline bool operator!=(const QInjection::Pointer<T> &p, const T *o)
 {
     return p.operator->() != o;
 }
 
 template<class T>
-inline bool operator!=(T *o, const Dependency::Pointer<T> &p)
+inline bool operator!=(T *o, const QInjection::Pointer<T> &p)
 {
     return o != p.operator->();
 }
 
 template<class T>
-inline bool operator!=(const Dependency::Pointer<T> &p, T *o)
+inline bool operator!=(const QInjection::Pointer<T> &p, T *o)
 {
     return p.operator->() != o;
 }
 
 template<class T>
-inline bool operator!=(const Dependency::Pointer<T> &p1,
-                       const Dependency::Pointer<T> &p2)
+inline bool operator!=(const QInjection::Pointer<T> &p1,
+                       const QInjection::Pointer<T> &p2)
 {
     return p1.operator->() != p2.operator->();
 }

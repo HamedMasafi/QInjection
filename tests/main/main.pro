@@ -10,12 +10,16 @@ TARGET = tst_main
 TEMPLATE = app
 
 SOURCES +=  \
-    adder.cpp \
+    ../common/adder.cpp \
+    ../common/constholder.cpp \
+    lifetimereporter.cpp \
     tst_main.cpp
 
 HEADERS += \
-    adder.h \
+    ../common/adder.h \
+    ../common/constholder.h \
+    lifetimereporter.h \
     tst_main.h
 
-
+INCLUDEPATH += ../common/
 include(../../src/src.pri)

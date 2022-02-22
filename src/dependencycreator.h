@@ -5,9 +5,10 @@
 #include <functional>
 #define CLASS_NAME(T) T::staticMetaObject.className()
 
-namespace Dependency {
+namespace QInjection {
 
 enum class CreatorType {
+    Unknown,
     Singelton,
     Scopped
 };
@@ -29,9 +30,9 @@ inline CreatorBase::CreatorBase(CreatorType type, const QString &key)
 template <class T>
 struct FunctionCreator : CreatorBase
 {
-    T (*_creatorFunction)();
+    T *(*_creatorFunction)();
 
-    FunctionCreator (CreatorType type, T (*creatorFunction)());
+    FunctionCreator (CreatorType type, T *(*creatorFunction)());
 
     QObject *create() override;
 };
@@ -61,7 +62,7 @@ Q_OUTOFLINE_TEMPLATE QObject *SimpleCreator<T>::create()
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE FunctionCreator<T>::FunctionCreator(CreatorType type, T (*creatorFunction)())
+Q_OUTOFLINE_TEMPLATE FunctionCreator<T>::FunctionCreator(CreatorType type, T *(*creatorFunction)())
     : CreatorBase(type, CLASS_NAME(T))
     , _creatorFunction(creatorFunction)
 {}
@@ -75,20 +76,18 @@ Q_OUTOFLINE_TEMPLATE QObject *FunctionCreator<T>::create()
 template <class OWNER, class T>
 struct ClassFunctionCreator : CreatorBase
 {
-    T (OWNER::*_creatorFunction)();
+    T *(OWNER::*_creatorFunction)();
     OWNER *_owner;
 
-    ClassFunctionCreator (CreatorType type, OWNER *owner, T (OWNER::*creatorFunction)());
+    ClassFunctionCreator (CreatorType type, OWNER *owner, T *(OWNER::*creatorFunction)());
 
     QObject *create() override;
 };
 
 template<class OWNER, class T>
 Q_OUTOFLINE_TEMPLATE ClassFunctionCreator<OWNER, T>::ClassFunctionCreator(
-    CreatorType type, OWNER *owner, T (OWNER::*creatorFunction)())
-    : CreatorBase(type, CLASS_NAME(T))
-    , _creatorFunction(creatorFunction)
-    , _owner(owner)
+    CreatorType type, OWNER *owner, T *(OWNER::*creatorFunction)())
+    : CreatorBase(type, CLASS_NAME(T)), _creatorFunction(creatorFunction), _owner(owner)
 {
 }
 
@@ -151,6 +150,6 @@ struct SignalPointerFunc : SignalBase {
     }
 };
 
-} // namespace Dependency
+} // namespace QInjection
 
 #endif // DEPENDENCYCREATOR_H

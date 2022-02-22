@@ -5,14 +5,22 @@
 #include <QObject>
 #include "dependencycreator.h"
 
-#define dep ::Dependency::Pool::instance()
-#define di_new(Type, ...) ::Dependency::Pool::instance()->create<Type, __VA_ARGS__>()
-#define di_get(type) ::Dependency::Pool::instance()->get<type>()
-#define di_add(type) ::Dependency::Pool::instance()->add<type>()
+#define dep ::QInjection
+#define di_new(Type, ...) ::QInjection::create<Type, __VA_ARGS__>()
+#define di_get(type) ::QInjection::get<type>()
+#define di_add(type) ::QInjection::add<type>()
 #define CLASS_NAME(T) T::staticMetaObject.className()
 
-namespace Dependency {
+namespace QInjection {
 
+namespace Impl {
+void addCreator(const QString &key, CreatorBase *creator);
+void addSignel(SignalBase *signal);
+void removeSignel(SignalBase *signal);
+int callSlots(QObject *o, bool sendNull = false);
+CreatorType typeForKey(const QString &key);
+} // namespace Impl
+/*
 class PoolPrivate;
 class Pool : public QObject
 {
@@ -21,15 +29,11 @@ class Pool : public QObject
     PoolPrivate *d_ptr;
     Q_DECLARE_PRIVATE(Pool)
 
-    typedef std::function<QObject *()> CreatorFunc;
-
-    QMap<QString, CreatorFunc> _creators;
-    QList<SignalBase *> _signals;
-
-
 public:
     explicit Pool(QObject *parent = nullptr);
 
+    template<class T>
+    void addSingleton();
     template<class T>
     void addSingleton(T *object);
     template<class T>
@@ -38,121 +42,45 @@ public:
     void addSingleton(_Owner *owner, void (_Owner::*slot)(T *));
 
     template<class T>
-    void addScopped(T *object);
-    template<class T>
     void addScopped(T *(*slot)());
     template<class _Owner, class T>
     void addScopped(_Owner *owner, void (_Owner::*slot)(T *));
 
+//#if __cplusplus >= 201402L
+//    template<class T, typename... _Args>
+//    void registerCreator(_Args... args)
+//    {
+//        _creators.insert(CLASS_NAME(T), [&args...]() {
+//            return new T(args...);
+//        });
+//    }
+//#endif
+
     QObject *create(const QString &key);
 
-    void add(QObject *object);
-    void add(QObject *object, const QString &key);
-    QObject *get(const QString &name);
-    bool remove(const QString &name, const bool &deleteLater = true);
-    bool contains(const QString &key) const;
+    template <class T>
+    T *create();
 
+    bool remove(const QString &name);
     template<class T>
-    Q_DECL_DEPRECATED T *add();
-
-    template<class T>
-    Q_DECL_DEPRECATED T *get();
-
-    template<class T>
-    Q_DECL_DEPRECATED T *get(const QString &key);
-
-    template<class T>
-    Q_DECL_DEPRECATED bool remove(const bool &deleteLater = true){
-        return remove(CLASS_NAME(T), deleteLater);
+    bool remove(){
+        return remove(CLASS_NAME(T));
     }
 
+    bool contains(const QString &key) const;
     template<class T>
-    Q_DECL_DEPRECATED bool contains() {
+    bool contains() {
         return contains(CLASS_NAME(T));
     }
 
     template<typename T, class R>
-    inline void registerObjectNotify(
-        R *reciver,
-        void(R::*slot)(T*))
-    {
-        QString key = CLASS_NAME(T);
-        auto s = new SignalPointer<T, R>();
-        s->_key = key;
-        s->slot = slot;
-        s->reciver = reciver;
-        _signals.append(s);
-
-        connect(reciver, &QObject::destroyed, [this, s](QObject * = nullptr) {
-            _signals.removeOne(s);
-        });
-    }
+    inline void registerObjectNotify(R *reciver, void (R::*slot)(T *));
 
     template<typename T, class R>
-    inline void registerObjectNotify(
-        R *reciver,
-        void(R::*slot)())
-    {
-        QString key = CLASS_NAME(T);
-        auto s = new SignalPointerWithoutParam<T, R>();
-        s->_key = key;
-        s->slot = slot;
-        s->reciver = reciver;
-        _signals.append(s);
-
-        connect(reciver, &QObject::destroyed, [this, s](QObject * = nullptr) {
-            _signals.removeOne(s);
-        });
-    }
+    inline void registerObjectNotify(R *reciver, void (R::*slot)());
 
     template<typename T, class R>
-    inline void registerObjectNotify(
-        R *reciver,
-        std::function<void(T*)> cb)
-    {
-        QString key = CLASS_NAME(T);
-        auto s = new SignalPointerFunc<T, R>();
-        s->_key = key;
-        s->_cb = cb;
-        _signals.append(s);
-
-        connect(reciver, &QObject::destroyed, [this, s](QObject * = nullptr) {
-            _signals.removeOne(s);
-        });
-    }
-
-    template<class T>
-    void registerCreator(CreatorFunc cb)
-    {
-        _creators.insert(CLASS_NAME(T), cb);
-    }
-    template<class T>
-    void registerCreator(T *(*cb)())
-    {
-        _creators.insert(CLASS_NAME(T), cb);
-    }
-    template<class T>
-    void registerCreator()
-    {
-        _creators.insert(CLASS_NAME(T), []() { return new T; });
-    }
-
-#if __cplusplus >= 201402L
-    template<class T, typename... _Args>
-    void registerCreator(_Args... args)
-    {
-        _creators.insert(CLASS_NAME(T), [&args...]() {
-            return new T(args...);
-        });
-    }
-#endif
-
-    template<class _Type, class... _Args>
-    _Type *create()
-    {
-        auto tmp = _creators.value(CLASS_NAME(_Type))();
-        return new _Type(get<_Args>()...);
-    }
+    inline void registerObjectNotify(R *reciver, std::function<void(T *)> cb);
 
     static Pool *_instance;
     static Pool *instance();
@@ -160,69 +88,119 @@ public:
 
 private:
     void addCreator(const QString &key, CreatorBase *creator);
+    void addSignel(SignalBase *signal);
+    void removeSignel(SignalBase *signal);
     int callSlots(QObject *o, bool sendNull = false);
+    CreatorType typeForKey(const QString &key);
 Q_SIGNALS:
 
-};
+};*/
+
+QObject *create(const QString &key);
+bool remove(const QString &name);
+bool contains(const QString &key);
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE void Pool::addSingleton(T *object) {
-    auto creator = new SimpleCreator<T>(CreatorType::Singelton, object);
-    addCreator(CLASS_NAME(T), creator);
+bool remove(){
+    return remove(CLASS_NAME(T));
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE void Pool::addSingleton(T*(*slot)() ) {
+Q_OUTOFLINE_TEMPLATE T *create()
+{
+    return qobject_cast<T*>(create(CLASS_NAME(T)));
+}
+
+// Add Objects
+template<class T>
+Q_OUTOFLINE_TEMPLATE void addSingleton()
+{
+    auto creator = new SimpleCreator<T>(CreatorType::Singelton, new T);
+    Impl::addCreator(CLASS_NAME(T), creator);
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE void addSingleton(T *object) {
+    auto creator = new SimpleCreator<T>(CreatorType::Singelton, object);
+    Impl::addCreator(CLASS_NAME(T), creator);
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE void addSingleton(T*(*slot)() ) {
     auto creator = new FunctionCreator<T>(CreatorType::Singelton, slot);
-    addCreator(CLASS_NAME(T), creator);
+    Impl::addCreator(CLASS_NAME(T), creator);
 }
 
 template<class _Owner, class T>
-Q_OUTOFLINE_TEMPLATE void Pool::addSingleton(_Owner *owner, void (_Owner::*slot)(T *))
+Q_OUTOFLINE_TEMPLATE void addSingleton(_Owner *owner, void (_Owner::*slot)(T *))
 {
     auto creator = new ClassFunctionCreator<_Owner, T>(CreatorType::Singelton, owner, slot);
-    addCreator(CLASS_NAME(T), creator);
+    Impl::addCreator(CLASS_NAME(T), creator);
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE void Pool::addScopped(T *object) {
-    auto creator = new SimpleCreator<T>(CreatorType::Scopped, object);
-    addCreator(CLASS_NAME(T), creator);
-}
-
-template<class T>
-Q_OUTOFLINE_TEMPLATE void Pool::addScopped(T*(*slot)() ) {
+Q_OUTOFLINE_TEMPLATE void addScopped(T*(*slot)() ) {
     auto creator = new FunctionCreator<T>(CreatorType::Scopped, slot);
-    addCreator(CLASS_NAME(T), creator);
+    Impl::addCreator(CLASS_NAME(T), creator);
 }
 
 template<class _Owner, class T>
-Q_OUTOFLINE_TEMPLATE void Pool::addScopped(_Owner *owner, void (_Owner::*slot)(T *))
+Q_OUTOFLINE_TEMPLATE void addScopped(_Owner *owner, void (_Owner::*slot)(T *))
 {
     auto creator = new ClassFunctionCreator<_Owner, T>(CreatorType::Scopped, owner, slot);
-    addCreator(CLASS_NAME(T), creator);
+    Impl::addCreator(CLASS_NAME(T), creator);
 }
 
-
-
-template <class T>
-Q_OUTOFLINE_TEMPLATE T *Pool::add()
+template<typename T, class R>
+Q_OUTOFLINE_TEMPLATE void registerObjectNotify(
+    R *reciver,
+    void(R::*slot)(T*))
 {
-    auto o = new T;
-    add(o);
-    return o;
-}
-template<class T>
-Q_OUTOFLINE_TEMPLATE T *Pool::get()
-{
-    return qobject_cast<T*>(get(CLASS_NAME(T)));
+    QString key = CLASS_NAME(T);
+    auto s = new SignalPointer<T, R>();
+    s->_key = key;
+    s->slot = slot;
+    s->reciver = reciver;
+    Impl::addSignel(s);
+
+    QObject::connect(reciver, &QObject::destroyed, [s](QObject * = nullptr) {
+        Impl::removeSignel(s);
+    });
 }
 
-template<class T>
-Q_OUTOFLINE_TEMPLATE T *Pool::get(const QString &key)
+template<typename T, class R>
+Q_OUTOFLINE_TEMPLATE void registerObjectNotify(
+    R *reciver,
+    void(R::*slot)())
 {
-    return qobject_cast<T*>(get(key));
+    QString key = CLASS_NAME(T);
+    auto s = new SignalPointerWithoutParam<T, R>();
+    s->_key = key;
+    s->slot = slot;
+    s->reciver = reciver;
+    Impl::addSignel(s);
+
+    QObject::connect(reciver, &QObject::destroyed, [s](QObject * = nullptr) {
+        Impl::removeSignel(s);
+    });
 }
+
+template<typename T, class R>
+Q_OUTOFLINE_TEMPLATE void registerObjectNotify(
+    R *reciver,
+    std::function<void(T*)> cb)
+{
+    QString key = CLASS_NAME(T);
+    auto s = new SignalPointerFunc<T, R>();
+    s->_key = key;
+    s->_cb = cb;
+    Impl::addSignel(s);
+
+    QObject::connect(reciver, &QObject::destroyed, [s](QObject * = nullptr) {
+        Impl::removeSignel(s);
+    });
+}
+
 }
 
 #endif // Pool_H

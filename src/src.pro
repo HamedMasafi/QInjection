@@ -17,14 +17,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    dependencycreator.cpp \
+    dependencyinjector.cpp \
     dependencypointer.cpp \
     dependencypool.cpp
 
 HEADERS += \
     dep_global.h \
+    dependencycreator.h \
+    dependencyinjector.h \
     dependencypointer.h \
-    dependencypool.h \
-    dependencypool_p.h
+    dependencypool.h
 
 # Default rules for deployment.
 unix {

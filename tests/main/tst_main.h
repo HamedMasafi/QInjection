@@ -18,7 +18,9 @@ private slots:
     void inject();
     void get();
     void macro_get();
-
+    void scopped();
+    void scope_lifetime();
+    void check_scope_lifetime();
 
 };
 

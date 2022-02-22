@@ -1,9 +1,11 @@
 #include "dependencyinjector.h"
 
-Dependency::Injecter Inject;
+namespace QInjection {
 
-Dependency::Injecter::Injecter() : _key{nullptr}
-{}
+Injecter Inject;
 
-Dependency::Injecter::Injecter(const char *key) : _key(key)
-{}
+Injecter::Injecter() : _key{nullptr} {}
+
+Injecter::Injecter(const char *key) : _key(key) {}
+
+} // namespace QInjection
