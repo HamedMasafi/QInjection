@@ -19,6 +19,7 @@ void addSignel(SignalBase *signal);
 void removeSignel(SignalBase *signal);
 int callSlots(QObject *o, bool sendNull = false);
 CreatorType typeForKey(const QString &key);
+void deleteObject(QObject *obj);
 } // namespace Impl
 /*
 class PoolPrivate;
@@ -115,7 +116,7 @@ Q_OUTOFLINE_TEMPLATE T *create()
 template<class T>
 Q_OUTOFLINE_TEMPLATE void addSingleton()
 {
-    auto creator = new SimpleCreator<T>(CreatorType::Singelton, new T);
+    auto creator = new OnceCreator<T>(CreatorType::Singelton);
     Impl::addCreator(CLASS_NAME(T), creator);
 }
 

@@ -53,6 +53,11 @@ CreatorType typeForKey(const QString &key)
     return d->creators.value(key)->_type;
 }
 
+void deleteObject(QObject *obj)
+{
+    obj->deleteLater();
+}
+
 } // namespace Impl
 
 QObject *create(const QString &key)

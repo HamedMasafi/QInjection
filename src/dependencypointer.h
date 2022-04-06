@@ -52,7 +52,7 @@ template<class T>
 Q_OUTOFLINE_TEMPLATE Pointer<T>::~Pointer()
 {
     if (_deleteOnExit)
-        _data->deleteLater();
+        QInjection::Impl::deleteObject(_data);
 }
 
 template<class T>
@@ -140,4 +140,13 @@ inline bool operator!=(const QInjection::Pointer<T> &p1,
     return p1.operator->() != p2.operator->();
 }
 
+
+#ifndef QINJECTION_BC
+namespace Dependency {
+template<class T>
+class Pointr : public QInjection::Pointer<T>
+{};
+
+}
+#endif
 #endif // DEPENDENCYPOINTER_H

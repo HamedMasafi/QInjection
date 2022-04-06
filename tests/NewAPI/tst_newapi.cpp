@@ -19,6 +19,7 @@ public:
 
 private slots:
     void test_case1();
+    void test_bc();
 };
 
 NewAPI::NewAPI()
@@ -31,6 +32,12 @@ NewAPI::~NewAPI() {}
 void NewAPI::test_case1()
 {
     QInjection::Pointer<Adder> adder;
+    QCOMPARE(adder->add(1, 2), 3);
+}
+
+void NewAPI::test_bc()
+{
+    Dependency::Pointr<Adder> adder;
     QCOMPARE(adder->add(1, 2), 3);
 }
 

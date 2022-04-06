@@ -47,6 +47,31 @@ struct SimpleCreator : CreatorBase
     QObject *create() override;
 };
 
+template <class T>
+struct OnceCreator : CreatorBase
+{
+    T *_object{nullptr};
+
+    OnceCreator (CreatorType type);
+
+    QObject *create() override;
+};
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE OnceCreator<T>::OnceCreator(CreatorType type)
+    : CreatorBase(type, CLASS_NAME(T))
+{
+
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE QObject *OnceCreator<T>::create()
+{
+    if (!_object)
+        _object = new T;
+    return _object;
+}
+
 template<class T>
 Q_OUTOFLINE_TEMPLATE SimpleCreator<T>::SimpleCreator(CreatorType type, T *object)
     : CreatorBase(type, CLASS_NAME(T))
