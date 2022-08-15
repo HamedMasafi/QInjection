@@ -1,4 +1,7 @@
 # Qt dependency injection lib
+
+QInjection is a dependency injection framework for Qt. It provides a way to automatically inject dependencies into classes, simplifying the process of creating and testing code.
+
 ## Quick start
 Imagine we have two class named _MyClass1_ and _MyClass2_ that we use them regularly in our app.
 
@@ -44,7 +47,7 @@ class C2;
 class P : public QObject
 {
     Q_OBJECT
-    Dependency::Pointer<MyClass1> _class1;
+    QInjection::Pointer<MyClass1> _class1;
 
 public:
     explicit P(QObject *parent = nullptr);
@@ -59,9 +62,58 @@ signals:
 As you can see the class _P_ need an object of type _MyClass1_ and with _Dependency::Pointer_ automatically it will get from _Pool_. In the method _foo_ the class need an object of type _MyClass2_ and with _Dependency::Inject_ utility this object will be injected to this class without custom code needle.
 
 ## Api doc
+#### Singleton vs Scopped
+
+Singleton objects are same for all of application lifetime, scopped objects are created on every request.
+
 ### Add an object to pool
-**Method 1:** Insert object
+```cpp
+template<class T>
+void addSingleton();
+
+template<class T>
+void addSingleton(T *object);
+
+template<class T>
+void addSingleton(T*(*slot)() );
+
+template<class _Owner, class T>
+void addSingleton(_Owner *owner, void (_Owner::*slot)(T *));
+
+template<class T>
+void addScopped(T *(*slot)())
+
+template<class _Owner, class T>
+void addScopped(_Owner *owner, void (_Owner::*slot)(T *));
 ```
+
+Examples:
+```cpp
+
+MyAnotherClass *createMyAnotherClass()
+{
+    auto o = new MyAnotherClass;
+    // set some properties for object o
+    return o;
+}
+
+int main(int argc, char *argv[])
+{
+
+    QCoreApplication a(argc, argv);
+
+    auto obj = new MyClass;
+
+    QInjection::addSingleton(obj); // pass object to dependency pool
+    QInjection::addSingleton(createMyAnotherClass); // pass function pointer to dependency pool
+
+    return a.exec();
+}
+	
+```
+
+**Method 1:** Insert object
+```cpp
 auto obj = new MyClass;
 DependencyInjection::instance()->add(obj);
 ```
@@ -79,6 +131,26 @@ auto obj = Dependency::Pool::instance()->add<MyClass>();
 ```
 
 ### Get object
+#### There are some method to getting object from the pool
+
+```cpp 
+void myMethod(Myclass *object = QInjection::Inject)
+{
+	// You can pass a object of type MyClass to this method. If you don't, the object will be taken from QInjection pool
+}
+```
+
+```cpp 
+void myMethod2()
+{
+	QInjection::Pointer<Myclass> object;
+	// This is where the object will be taken from the pool. 
+	// If it's registration type is of a scopped type, it'll be deleted after the end.
+}
+```
+
+
+
 ```
 auto obj = Dependency::Pool::instance()->get<MyClass>();
 auto obj2 = sobject_cast<MyClass*>(Dependency::Pool::instance()->get("MyCustomKey"));

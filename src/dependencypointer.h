@@ -41,7 +41,7 @@ public:
 template<class T>
 Q_OUTOFLINE_TEMPLATE Pointer<T>::Pointer() : _data(create<T>())
 {
-    auto t = Impl::typeForKey(CLASS_NAME(T));
+    auto t = Private::typeForKey(CLASS_NAME(T));
     _deleteOnExit = t == CreatorType::Scopped;
     registerObjectNotify<T>(this, [this](T *t) {
         _data = t;
@@ -51,8 +51,8 @@ Q_OUTOFLINE_TEMPLATE Pointer<T>::Pointer() : _data(create<T>())
 template<class T>
 Q_OUTOFLINE_TEMPLATE Pointer<T>::~Pointer()
 {
-    if (_deleteOnExit)
-        QInjection::Impl::deleteObject(_data);
+    if (_deleteOnExit && _data)
+        Private::deleteObject(static_cast<QObject*>(_data));
 }
 
 template<class T>

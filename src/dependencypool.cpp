@@ -11,7 +11,50 @@ struct Data {
 };
 Q_GLOBAL_STATIC(Data, d);
 
-namespace Impl {
+namespace Private {
+
+QObject *create(const QString &key)
+{
+    if (!d->creators.contains(key))
+        return nullptr;
+
+    auto creator = d->creators.value(key);
+
+    switch (creator->_type) {
+    case CreatorType::Unknown:
+        return nullptr;
+
+    case CreatorType::Scopped:
+        return creator->create();
+
+    case CreatorType::Singelton: {
+        if (creator->_object)
+            return creator->_object;
+
+        creator->_object = creator->create();
+        return creator->_object;
+    }
+    }
+
+    Q_UNREACHABLE();
+
+    return nullptr;
+}
+bool remove(const QString &name)
+{
+    if (!d->creators.contains(name))
+        return false;
+
+    auto creator = d->creators.value(name);
+    if (creator->_type == CreatorType::Singelton && creator->_object)
+        creator->_object->deleteLater();
+    return d->creators.remove(name) > 0;
+}
+
+bool contains(const QString &key)
+{
+    return d->creators.contains(key);
+}
 
 void addCreator(const QString &key, CreatorBase *creator)
 {
@@ -59,49 +102,5 @@ void deleteObject(QObject *obj)
 }
 
 } // namespace Impl
-
-QObject *create(const QString &key)
-{
-    if (!d->creators.contains(key))
-        return nullptr;
-
-    auto creator = d->creators.value(key);
-
-    switch (creator->_type) {
-    case CreatorType::Unknown:
-        return nullptr;
-
-    case CreatorType::Scopped:
-        return creator->create();
-
-    case CreatorType::Singelton: {
-        if (creator->_object)
-            return creator->_object;
-
-        creator->_object = creator->create();
-        return creator->_object;
-    }
-    }
-
-    Q_UNREACHABLE();
-
-    return nullptr;
-}
-
-bool remove(const QString &name)
-{
-    if (!d->creators.contains(name))
-        return false;
-
-    auto creator = d->creators.value(name);
-    if (creator->_type == CreatorType::Singelton && creator->_object)
-        creator->_object->deleteLater();
-    return d->creators.remove(name) > 0;
-}
-
-bool contains(const QString &key)
-{
-    return d->creators.contains(key);
-}
 
 } // namespace QInjection

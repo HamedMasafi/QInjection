@@ -7,7 +7,7 @@ namespace QInjection {
 
 class Injecter
 {
-    const char *_key;
+    const char *_key{nullptr};
 
 public:
     Injecter();
@@ -19,10 +19,15 @@ public:
     template<class T>
     operator T *()
     {
+        T *tmp = nullptr;
         if (_key)
-            return create<T>();
+            tmp = qobject_cast<T *>(Private::create(_key));
         else
-            return qobject_cast<T *>(create(_key));
+            tmp = create<T>();
+
+        if (tmp && Private::typeForKey(CLASS_NAME(T)) == CreatorType::Scopped)
+            tmp->deleteLater();
+        return tmp;
     }
 };
 

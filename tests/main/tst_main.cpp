@@ -11,9 +11,11 @@
 #include "lifetimereporter.h"
 
 bool lifeTime;
+
 LifeTimeReporter *createLifeTimeReporter() {
     return new LifeTimeReporter(&lifeTime);
 }
+
 ConstHolder *createRandomNumberHolder() {
     qDebug() << "Creating const helper";
     auto o = new ConstHolder;
@@ -55,12 +57,6 @@ void MainTest::get()
     QCOMPARE(a->add(7, 3), 10);
 }
 
-void MainTest::macro_get()
-{
-    auto a = QInjection::create<Adder>();
-    QCOMPARE(a->add(7, 3), 10);
-}
-
 void MainTest::scopped()
 {
     int v1{0};
@@ -88,6 +84,24 @@ void MainTest::scope_lifetime()
 }
 
 void MainTest::check_scope_lifetime()
+{
+    QCOMPARE(lifeTime, false);
+}
+
+bool run_lifetime_inject(LifeTimeReporter *l = QInjection::Inject)
+{
+    Q_UNUSED(l);
+    return lifeTime;
+}
+
+void MainTest::scope_lifetime2()
+{
+    run_lifetime_inject();
+    QCOMPARE(lifeTime, true);
+    qApp->processEvents();
+}
+
+void MainTest::check_scope_lifetime2()
 {
     QCOMPARE(lifeTime, false);
 }

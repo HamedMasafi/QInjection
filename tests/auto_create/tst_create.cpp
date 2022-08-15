@@ -40,8 +40,8 @@ tst_create::~tst_create()
 
 void tst_create::test_inject()
 {
-//    ConstHolder *holder = QInjection::Inject;
-    QInjection::Pointer<ConstHolder> holder;
+    ConstHolder *holder = QInjection::Inject;
+//    QInjection::Pointer<ConstHolder> holder;
     QCOMPARE(holder->value(), _value);
 }
 
