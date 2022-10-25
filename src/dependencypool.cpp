@@ -92,7 +92,6 @@ CreatorType typeForKey(const QString &key)
 {
     if (!d->creators.contains(key))
         return CreatorType::Unknown;
-    qDebug() << (int)d->creators.value(key)->_type;
     return d->creators.value(key)->_type;
 }
 
